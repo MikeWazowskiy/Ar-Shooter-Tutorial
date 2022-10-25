@@ -1,0 +1,87 @@
+Enemy
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Enemy : MonoBehaviour
+{
+    public float speed = 0.5f;
+
+    void Update()
+    {
+        transform.LookAt(GameObject.Find("AR Camera").GetComponent<Transform>().position);
+        transform.Translate(0f, 0f, speed * Time.deltaTime);
+    }
+}
+
+Spawner
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Spawner : MonoBehaviour
+{
+    public Transform[] spawnPoints;
+    public GameObject[] enemies;
+
+    public GameObject[] UI;
+
+    public void EnableSpawner()
+    {
+        GameObject.Find("PlayBtn").SetActive(false);
+
+        foreach (GameObject g in UI)
+            g.SetActive(true);
+
+        StartCoroutine(StartSpawning());
+    }
+
+    public IEnumerator StartSpawning()
+    {
+        yield return new WaitForSeconds(3);
+
+        Instantiate(enemies[Random.Range(0, 2)], spawnPoints[Random.Range(0, 8)].position, Quaternion.identity);
+
+        StartCoroutine(StartSpawning());
+    }
+}
+
+Player
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Player : MonoBehaviour
+{
+    private int score = 0;
+    public Text scoreText;
+
+    private void Update()
+    {
+        scoreText.text = score.ToString();
+    }
+
+    public void Shoot()
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(transform.position, transform.forward, out hit))
+        {
+            if (hit.transform.name == "enemy1(Clone)" || hit.transform.name == "enemy2(Clone)")
+            {
+                Destroy(hit.transform.gameObject);
+                score++;
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Destroy(other.gameObject);
+    }
+}
+
